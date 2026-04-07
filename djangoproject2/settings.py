@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -116,7 +118,19 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-import os
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-    
+
+
+# 1. Update ALLOWED_HOSTS so Render can talk to your app
+ALLOWED_HOSTS = ['*'] 
+
+# 2. Add WhiteNoise to Middleware (MUST be after SecurityMiddleware)
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+
+# 3. Tell Django where to put static files when it collects them
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# 4. Use dj_database_url to connect to Render's Postgres
+DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
